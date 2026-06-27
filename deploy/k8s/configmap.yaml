@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lightscan-config
+  labels:
+    app: lightscan
+data:
+  DATABASE_URL: "postgresql+psycopg://lightscan:lightscan@lightscan-postgres:5432/lightscan"
+  REDIS_URL: "redis://lightscan-redis:6379/0"

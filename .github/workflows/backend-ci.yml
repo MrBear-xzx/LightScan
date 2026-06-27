@@ -1,0 +1,77 @@
+name: backend-ci
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+      - "deploy/**"
+
+concurrency:
+  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: lightscan
+          POSTGRES_USER: lightscan
+          POSTGRES_PASSWORD: lightscan
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lightscan -d lightscan"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://lightscan:lightscan@127.0.0.1:5432/lightscan
+      CELERY_TASK_ALWAYS_EAGER: "1"
+      PIP_INDEX_URL: https://pypi.tuna.tsinghua.edu.cn/simple
+      PIP_TRUSTED_HOST: pypi.tuna.tsinghua.edu.cn
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install .
+
+      - name: Run lint
+        run: python -m ruff check app tests
+
+      - name: Run db tests
+        run: python -m pytest tests/db -q
+
+      - name: Run service tests
+        run: python -m pytest tests/services -q
+
+      - name: Run api tests
+        run: python -m pytest tests/api -q
+
+      - name: Run worker tests
+        run: python -m pytest tests/worker -q
+
+      - name: Run e2e smoke tests
+        run: python -m pytest tests/e2e -q
+
+      - name: Run coverage gate
+        run: python -m pytest tests -q --cov=app --cov-fail-under=70

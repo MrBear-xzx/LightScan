@@ -1,0 +1,72 @@
+﻿# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Node / frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+site/
+
+# Runtime logs and temp
+*.log
+logs/
+tmp/
+temp/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_ed25519
+
+# Database / local state
+*.db
+*.sqlite
+*.sqlite3
+
+# Container local artifacts
+.docker/
+
+# Codex runtime cache (keep project docs tracked)
+.agents/
+.codex/
+
+# Keep docs tracked
+!docs/
