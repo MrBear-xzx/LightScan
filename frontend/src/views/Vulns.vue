@@ -95,10 +95,9 @@
 </template>
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useAuthStore } from '../stores/auth';
+
 import { api } from '../api';
 import Layout from '../components/Layout.vue';
-const auth = useAuthStore();
 const tab = ref('list');
 const vulns = ref([]);
 const searchQuery = ref('');
@@ -119,12 +118,12 @@ function openStateModal(v) { stateModal.value = v; newState.value = v.state || '
 function openAssignModal(v) { assignModal.value = v; assignee.value = v.owner || ''; }
 async function handleStateChange() { try { await api.updateState(stateModal.value.case_id, { new_state: newState.value }); stateModal.value = null; await loadVulns(); } catch (e) { alert('更新失败: ' + e.message); } }
 async function handleAssign() { try { await api.assignCase(assignModal.value.case_id, { owner: assignee.value }); assignModal.value = null; await loadVulns(); } catch (e) { alert('分配失败: ' + e.message); } }
-async function handleCreateTag() { if (!newTagName.value.trim()) return; try { await api.createTag({ tenant_id: auth.tenantId, name: newTagName.value.trim(), color: newTagColor.value }); newTagName.value = ''; await loadTags(); } catch (e) { alert('创建失败: ' + e.message); } }
-async function handleDeleteTag(tagId) { try { await api.deleteTag(tagId, auth.tenantId); await loadTags(); } catch (e) { alert('删除失败: ' + e.message); } }
-async function handleSaveRisk() { riskMsg.value = ''; try { await api.updateRiskRules(auth.tenantId, riskRules.value); riskMsg.value = '规则保存成功！'; } catch (e) { riskMsg.value = '保存失败: ' + e.message; } }
-async function loadVulns() { try { const data = await api.vulnCases({ tenant_id: auth.tenantId, page_size: 50 }); vulns.value = data.items ?? data ?? []; } catch (e) { console.error(e); } }
-async function loadTags() { try { const data = await api.vulnTags(auth.tenantId); tags.value = data.items ?? data ?? []; } catch (e) { console.error(e); } }
-async function loadCorrelation() { correlationLoading.value = true; try { const data = await api.correlation(auth.tenantId); correlationData.value = data.items ?? data ?? []; } catch (e) { console.error(e); } finally { correlationLoading.value = false; } }
-async function loadRiskRules() { try { const data = await api.riskRules(auth.tenantId); if (data) riskRules.value = { ...riskRules.value, ...data }; } catch (e) { console.error(e); } }
+async function handleCreateTag() { if (!newTagName.value.trim()) return; try { await api.createTag({ name: newTagName.value.trim(), color: newTagColor.value }); newTagName.value = ''; await loadTags(); } catch (e) { alert('创建失败: ' + e.message); } }
+async function handleDeleteTag(tagId) { try { await api.deleteTag(tagId); await loadTags(); } catch (e) { alert('删除失败: ' + e.message); } }
+async function handleSaveRisk() { riskMsg.value = ''; try { await api.updateRiskRules(riskRules.value); riskMsg.value = '规则保存成功！'; } catch (e) { riskMsg.value = '保存失败: ' + e.message; } }
+async function loadVulns() { try { const data = await api.vulnCases({ page_size: 50 }); vulns.value = data.items ?? data ?? []; } catch (e) { console.error(e); } }
+async function loadTags() { try { const data = await api.vulnTags(); tags.value = data.items ?? data ?? []; } catch (e) { console.error(e); } }
+async function loadCorrelation() { correlationLoading.value = true; try { const data = await api.correlation(); correlationData.value = data.items ?? data ?? []; } catch (e) { console.error(e); } finally { correlationLoading.value = false; } }
+async function loadRiskRules() { try { const data = await api.riskRules(); if (data) riskRules.value = { ...riskRules.value, ...data }; } catch (e) { console.error(e); } }
 onMounted(() => { loadVulns(); loadTags(); loadCorrelation(); loadRiskRules(); });
 </script>

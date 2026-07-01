@@ -60,21 +60,20 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/auth';
+
 import { api } from '../api';
 import Layout from '../components/Layout.vue';
-const auth = useAuthStore();
 const router = useRouter();
 function goDetail(id) { router.push('/scans/' + id); }
 const tab = ref('create');
 const createForm = ref({ target: '', policy_id: '' });
 const createLoading = ref(false); const createMsg = ref(''); const tasks = ref([]); const progress = ref(null);
 const batchTargets = ref(''); const batchLoading = ref(false); const batchMsg = ref(''); const policies = ref([]);
-async function handleCreate() { createMsg.value = ''; createLoading.value = true; try { await api.createTask({ tenant_id: auth.tenantId, targets: [createForm.value.target], policy_id: createForm.value.policy_id || "default-external" }); createMsg.value = '任务创建成功！'; createForm.value = { target: '', policy_id: '' }; } catch (e) { createMsg.value = '创建失败: ' + e.message; } finally { createLoading.value = false; } }
-async function loadTasks() { try { const prog = await api.scanProgress({ tenant_id: auth.tenantId }); progress.value = prog; tasks.value = prog.tasks ?? []; } catch (e) { console.error(e); } }
-async function handleCancel(taskId) { try { await api.cancelTask(taskId, auth.tenantId); await loadTasks(); } catch (e) { alert('取消失败: ' + e.message); } }
-async function handleBatch() { batchMsg.value = ''; batchLoading.value = true; try { const lines = batchTargets.value.split('\n').map(s => s.trim()).filter(Boolean); if (!lines.length) { batchMsg.value = '请输入目标'; return; } await api.batchScan({ tenant_id: auth.tenantId, targets: lines }); batchMsg.value = '批量扫描已提交，共 ' + lines.length + ' 个任务'; } catch (e) { batchMsg.value = '提交失败: ' + e.message; } finally { batchLoading.value = false; } }
-async function loadPolicies() { try { const data = await api.scanPolicies(auth.tenantId); policies.value = Array.isArray(data) ? data : (data.items ?? []); } catch (e) { console.error(e); } }
+async function handleCreate() { createMsg.value = ''; createLoading.value = true; try { await api.createTask({ targets: [createForm.value.target], policy_id: createForm.value.policy_id || "default-external" }); createMsg.value = '任务创建成功！'; createForm.value = { target: '', policy_id: '' }; } catch (e) { createMsg.value = '创建失败: ' + e.message; } finally { createLoading.value = false; } }
+async function loadTasks() { try { const prog = await api.scanProgress({}); progress.value = prog; tasks.value = prog.tasks ?? []; } catch (e) { console.error(e); } }
+async function handleCancel(taskId) { try { await api.cancelTask(taskId); await loadTasks(); } catch (e) { alert('取消失败: ' + e.message); } }
+async function handleBatch() { batchMsg.value = ''; batchLoading.value = true; try { const lines = batchTargets.value.split('\n').map(s => s.trim()).filter(Boolean); if (!lines.length) { batchMsg.value = '请输入目标'; return; } await api.batchScan({ targets: lines }); batchMsg.value = '批量扫描已提交，共 ' + lines.length + ' 个任务'; } catch (e) { batchMsg.value = '提交失败: ' + e.message; } finally { batchLoading.value = false; } }
+async function loadPolicies() { try { const data = await api.scanPolicies(); policies.value = Array.isArray(data) ? data : (data.items ?? []); } catch (e) { console.error(e); } }
 function formatTime(t) { if (!t) return '-'; var d = new Date(t); var p = function(n) { return String(n).padStart(2, '0'); }; return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
 onMounted(() => { loadTasks(); loadPolicies(); });
 </script>

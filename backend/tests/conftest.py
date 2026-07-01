@@ -20,7 +20,6 @@ MODEL_MODULES = (
     'app.models.finding',
     'app.models.vuln_case',
     'app.models.policy',
-    'app.models.user',
 )
 
 

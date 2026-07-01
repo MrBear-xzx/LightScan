@@ -18,10 +18,7 @@ from app.api.routes.vuln_lifecycle import router as vuln_lifecycle_router
 from app.api.routes.operation_logs import router as operation_logs_router
 from app.api.routes.alert_rules import router as alert_rules_router
 from app.api.routes.backups import router as backups_router
-from app.api.routes.auth import router as auth_router
-from app.api.routes.auth_rbac import router as auth_rbac_router
 from app.middleware.audit_log import AuditLogMiddleware
-from app.api.routes.projects import router as projects_router
 from app.api.routes.notification_templates import router as notification_templates_router
 from app.api.routes.webhook_subscriptions import router as webhook_subscriptions_router
 from app.api.routes.scheduled_reports import router as scheduled_reports_router
@@ -64,12 +61,9 @@ app.include_router(vuln_lifecycle_router)
 app.include_router(operation_logs_router)
 app.include_router(alert_rules_router)
 app.include_router(backups_router)
-app.include_router(auth_router)
-app.include_router(auth_rbac_router)
 app.include_router(scheduled_reports_router)
 app.include_router(webhook_subscriptions_router)
 app.include_router(notification_templates_router)
-app.include_router(projects_router)
 app.add_middleware(AuditLogMiddleware)
 
 

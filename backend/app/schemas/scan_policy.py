@@ -8,7 +8,7 @@ class ScanPolicyRule(BaseModel):
 
 
 class ScanPolicyCreate(BaseModel):
-    tenant_id: str = Field(description='????')
+    tenant_id: str = Field(default='default', description='????')
     name: str = Field(min_length=1, description='????')
     description: str = Field(default='', description='????')
     plugins: list[ScanPolicyRule] = Field(default_factory=list, description='????')

@@ -49,10 +49,9 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '../stores/auth';
+
 import { api } from '../api';
 import Layout from '../components/Layout.vue';
-const auth = useAuthStore();
 const tab = ref('dispatch');
 const dispatchForm = ref({ channel: 'email', recipient: '', title: '', body: '' });
 const dispatchLoading = ref(false); const dispatchMsg = ref('');
@@ -60,14 +59,14 @@ const policy = ref({ new_vuln: 'enabled', high_risk: 'enabled', sla_breach: 'ena
 const policyMsg = ref('');
 const templateForm = ref({ name: '', type: 'email' }); const templates = ref([]);
 const webhookForm = ref({ name: '', url: '', event_type: 'vuln_created' }); const webhooks = ref([]);
-async function handleDispatch() { dispatchMsg.value = ''; dispatchLoading.value = true; try { await api.dispatchNotification({ tenant_id: auth.tenantId, provider: dispatchForm.value.channel === 'email' ? 'webhook' : dispatchForm.value.channel, webhook_url: dispatchForm.value.recipient || undefined, min_risk_score: 7.0 }); dispatchMsg.value = '通知已发送！'; dispatchForm.value = { channel: 'email', recipient: '', title: '', body: '' }; } catch (e) { dispatchMsg.value = '发送失败: ' + e.message; } finally { dispatchLoading.value = false; } }
-async function handleSavePolicy() { try { await api.updateNotifyPolicy({ tenant_id: auth.tenantId, dedup_window_minutes: policy.value.dedup_window_minutes || 30 }); policyMsg.value = '策略保存成功！'; } catch (e) { policyMsg.value = '保存失败: ' + e.message; } }
-async function handleCreateTemplate() { try { await api.createNotifyTemplate(auth.tenantId, { name: templateForm.value.name, provider: templateForm.value.type || 'webhook', title_template: '', body_template: '', enabled: true }); templateForm.value = { name: '', type: 'email' }; await loadTemplates(); } catch (e) { alert('创建失败'); } }
-async function handleDeleteTemplate(id) { try { await api.deleteNotifyTemplate(id, auth.tenantId); await loadTemplates(); } catch (e) { alert('删除失败'); } }
-async function handleCreateWebhook() { try { await api.createWebhookSub(auth.tenantId, { url: webhookForm.value.url, event_types: [webhookForm.value.event_type], description: webhookForm.value.name, enabled: true }); webhookForm.value = { name: '', url: '', event_type: 'vuln_created' }; await loadWebhooks(); } catch (e) { alert('创建失败'); } }
-async function handleDeleteWebhook(id) { try { await api.deleteWebhookSub(id, auth.tenantId); await loadWebhooks(); } catch (e) { alert('删除失败'); } }
-async function loadPolicy() { try { const d = await api.notifyPolicy(auth.tenantId); if (d) policy.value.dedup_window_minutes = d.dedup_window_minutes; } catch (e) { console.error(e); } }
-async function loadTemplates() { try { const d = await api.notifyTemplates(auth.tenantId); const raw = d.items ?? d ?? []; templates.value = raw.map(function(t) { return { id: t.template_id, name: t.config && t.config.name || '', type: t.config && t.config.provider || '' }; }); } catch (e) { console.error(e); } }
-async function loadWebhooks() { try { const d = await api.webhookSubs(auth.tenantId); const raw = d.items ?? d ?? []; webhooks.value = raw.map(function(w) { var cfg = w.config || {}; return { id: w.sub_id, name: cfg.description || '', url: cfg.url || '', event_type: (cfg.event_types || []).join(';'), enabled: cfg.enabled !== false }; }); } catch (e) { console.error(e); } }
+async function handleDispatch() { dispatchMsg.value = ''; dispatchLoading.value = true; try { await api.dispatchNotification({ provider: dispatchForm.value.channel === 'email' ? 'webhook' : dispatchForm.value.channel, webhook_url: dispatchForm.value.recipient || undefined, min_risk_score: 7.0 }); dispatchMsg.value = '通知已发送！'; dispatchForm.value = { channel: 'email', recipient: '', title: '', body: '' }; } catch (e) { dispatchMsg.value = '发送失败: ' + e.message; } finally { dispatchLoading.value = false; } }
+async function handleSavePolicy() { try { await api.updateNotifyPolicy({ dedup_window_minutes: policy.value.dedup_window_minutes || 30 }); policyMsg.value = '策略保存成功！'; } catch (e) { policyMsg.value = '保存失败: ' + e.message; } }
+async function handleCreateTemplate() { try { await api.createNotifyTemplate({ name: templateForm.value.name, provider: templateForm.value.type || 'webhook', title_template: '', body_template: '', enabled: true }); templateForm.value = { name: '', type: 'email' }; await loadTemplates(); } catch (e) { alert('创建失败'); } }
+async function handleDeleteTemplate(id) { try { await api.deleteNotifyTemplate(id); await loadTemplates(); } catch (e) { alert('删除失败'); } }
+async function handleCreateWebhook() { try { await api.createWebhookSub({ url: webhookForm.value.url, event_types: [webhookForm.value.event_type], description: webhookForm.value.name, enabled: true }); webhookForm.value = { name: '', url: '', event_type: 'vuln_created' }; await loadWebhooks(); } catch (e) { alert('创建失败'); } }
+async function handleDeleteWebhook(id) { try { await api.deleteWebhookSub(id); await loadWebhooks(); } catch (e) { alert('删除失败'); } }
+async function loadPolicy() { try { const d = await api.notifyPolicy(); if (d) policy.value.dedup_window_minutes = d.dedup_window_minutes; } catch (e) { console.error(e); } }
+async function loadTemplates() { try { const d = await api.notifyTemplates(); const raw = d.items ?? d ?? []; templates.value = raw.map(function(t) { return { id: t.template_id, name: t.config && t.config.name || '', type: t.config && t.config.provider || '' }; }); } catch (e) { console.error(e); } }
+async function loadWebhooks() { try { const d = await api.webhookSubs(); const raw = d.items ?? d ?? []; webhooks.value = raw.map(function(w) { var cfg = w.config || {}; return { id: w.sub_id, name: cfg.description || '', url: cfg.url || '', event_type: (cfg.event_types || []).join(';'), enabled: cfg.enabled !== false }; }); } catch (e) { console.error(e); } }
 onMounted(() => { loadPolicy(); loadTemplates(); loadWebhooks(); });
 </script>

@@ -76,23 +76,22 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '../stores/auth';
+
 import { api } from '../api';
 import Layout from '../components/Layout.vue';
-const auth = useAuthStore();
 const tab = ref('sla');
 const slaLoading = ref(false); const sla = ref({});
 const trendStart = ref(new Date(Date.now()-30*86400000).toISOString().slice(0,10)); const trendEnd = ref(new Date().toISOString().slice(0,10)); const trendLoading = ref(false); const trendData = ref([]);
 const summaryLoading = ref(false); const summary = ref(null);
 const lifecycleLoading = ref(false); const lifecycle = ref(null);
 const schedForm = ref({ name: '', cron: '0 8 * * 1', recipients: '' }); const schedReports = ref([]);
-async function loadSla() { slaLoading.value = true; try { const d = await api.slaOverview(auth.tenantId); sla.value = { within_sla_percent: d.total_cases > 0 ? Math.round((d.total_cases - d.overdue_cases) / d.total_cases * 100) : 0, within_sla: d.total_cases - d.overdue_cases, breached: d.overdue_cases, total_resolved: d.status_counts?.fixed || 0, total_cases: d.total_cases, by_severity: [] }; } catch (e) { console.error(e); } finally { slaLoading.value = false; } }
-async function loadTrend() { trendLoading.value = true; try { const d = await api.slaTrend({ tenant_id: auth.tenantId, start_date: trendStart.value, end_date: trendEnd.value }); const pts = d.points ?? []; trendData.value = pts.map(function(p) { return { date: p.date, total: p.total_cases, within_sla: p.total_cases - p.overdue_cases, breached: p.overdue_cases, within_sla_percent: p.total_cases > 0 ? Math.round((p.total_cases - p.overdue_cases) / p.total_cases * 100) : 0 }; }); } catch (e) { console.error(e); } finally { trendLoading.value = false; } }
-async function loadSummary() { summaryLoading.value = true; try { const d = await api.vulnSummary(auth.tenantId); const cnt = d.counts || {}; summary.value = { total_critical: cnt.critical || 0, total_high: cnt.high || 0, total_medium: cnt.medium || 0, total_low: cnt.low || 0, vuln_new: cnt.new || 0, vuln_confirmed: cnt.confirmed || 0, vuln_in_progress: cnt.in_progress || 0, vuln_fixed: cnt.fixed || 0 }; } catch (e) { console.error(e); } finally { summaryLoading.value = false; } }
-async function loadLifecycle() { try { lifecycle.value = await api.lifecycle(auth.tenantId); } catch (e) { console.error(e); } }
-async function loadSchedReports() { try { const d = await api.scheduledReports(auth.tenantId); schedReports.value = d.points ?? []; } catch (e) { console.error(e); } }
-async function handleCreateSched() { try { await api.createScheduledReport(auth.tenantId, schedForm.value); schedForm.value = { name: '', cron: '0 8 * * 1', recipients: '' }; await loadSchedReports(); } catch (e) { alert('创建失败'); } }
-async function handleDeleteSched(id) { try { await api.deleteScheduledReport(id, auth.tenantId); await loadSchedReports(); } catch (e) { alert('删除失败'); } }
-async function handleExport() { try { const r = await api.exportCsv(auth.tenantId); const b = await r.blob(); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'vuln-export.csv'; a.click(); } catch (e) { alert('导出失败'); } }
+async function loadSla() { slaLoading.value = true; try { const d = await api.slaOverview(); sla.value = { within_sla_percent: d.total_cases > 0 ? Math.round((d.total_cases - d.overdue_cases) / d.total_cases * 100) : 0, within_sla: d.total_cases - d.overdue_cases, breached: d.overdue_cases, total_resolved: d.status_counts?.fixed || 0, total_cases: d.total_cases, by_severity: [] }; } catch (e) { console.error(e); } finally { slaLoading.value = false; } }
+async function loadTrend() { trendLoading.value = true; try { const d = await api.slaTrend({ start_date: trendStart.value, end_date: trendEnd.value }); const pts = d.points ?? []; trendData.value = pts.map(function(p) { return { date: p.date, total: p.total_cases, within_sla: p.total_cases - p.overdue_cases, breached: p.overdue_cases, within_sla_percent: p.total_cases > 0 ? Math.round((p.total_cases - p.overdue_cases) / p.total_cases * 100) : 0 }; }); } catch (e) { console.error(e); } finally { trendLoading.value = false; } }
+async function loadSummary() { summaryLoading.value = true; try { const d = await api.vulnSummary(); const cnt = d.counts || {}; summary.value = { total_critical: cnt.critical || 0, total_high: cnt.high || 0, total_medium: cnt.medium || 0, total_low: cnt.low || 0, vuln_new: cnt.new || 0, vuln_confirmed: cnt.confirmed || 0, vuln_in_progress: cnt.in_progress || 0, vuln_fixed: cnt.fixed || 0 }; } catch (e) { console.error(e); } finally { summaryLoading.value = false; } }
+async function loadLifecycle() { try { lifecycle.value = await api.lifecycle(); } catch (e) { console.error(e); } }
+async function loadSchedReports() { try { const d = await api.scheduledReports(); schedReports.value = d.points ?? []; } catch (e) { console.error(e); } }
+async function handleCreateSched() { try { await api.createScheduledReport(schedForm.value); schedForm.value = { name: '', cron: '0 8 * * 1', recipients: '' }; await loadSchedReports(); } catch (e) { alert('创建失败'); } }
+async function handleDeleteSched(id) { try { await api.deleteScheduledReport(id); await loadSchedReports(); } catch (e) { alert('删除失败'); } }
+async function handleExport() { try { const r = await api.exportCsv(); const b = await r.blob(); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'vuln-export.csv'; a.click(); } catch (e) { alert('导出失败'); } }
 onMounted(() => { loadSla(); loadTrend(); loadSummary(); loadLifecycle(); loadSchedReports(); });
 </script>

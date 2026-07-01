@@ -11,7 +11,7 @@ class BatchScanTarget(BaseModel):
 
 
 class BatchScanRequest(BaseModel):
-    tenant_id: str = Field(description='????', examples=['t1'])
+    tenant_id: str = Field(default='default', description='????', examples=['t1'])
     batches: list[BatchScanTarget] = Field(
         min_length=1,
         description='??????????????????+???',

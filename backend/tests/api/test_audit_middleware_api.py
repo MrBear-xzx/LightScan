@@ -6,8 +6,8 @@ from app.main import app
 def test_audit_log_records_post_request() -> None:
     client = TestClient(app)
     # Send a POST that will be intercepted by middleware
-    resp = client.post('/api/v1/auth/register', json={
-        'tenant_id': 't_audit', 'username': 'audit_test', 'password': 'pass1234',
+    resp = client.post('/api/v1/discovery/tasks', json={
+        'tenant_id': 't_audit', 'targets': ['example.com'], 'task_type': 'discover',
     })
     assert resp.status_code == 201
     # Middleware runs after response, so status should be normal

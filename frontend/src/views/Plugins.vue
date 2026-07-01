@@ -45,16 +45,16 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '../stores/auth';
+
 import { api } from '../api';
 import Layout from '../components/Layout.vue';
-const auth = useAuthStore(); const tab = ref('list'); const plugins = ref([]); const healthData = ref(null);
+const tab = ref('list'); const plugins = ref([]); const healthData = ref(null);
 const rolloutPolicy = ref({ mode: 'all', percentage: 10, target_tenants: '', auto_rollback: true, health_threshold: 20 }); const rolloutMsg = ref(''); const auditData = ref([]);
-async function togglePlugin(p) { try { await api.updateRolloutPolicy({ tenant_id: auth.tenantId, plugin_id: p.id, enabled: !p.enabled }); await loadPlugins(); } catch (e) { alert('操作失败'); } }
-async function handleSaveRollout() { rolloutMsg.value = ''; try { await api.updateRolloutPolicy({ tenant_id: auth.tenantId, ...rolloutPolicy.value }); rolloutMsg.value = '保存成功！'; } catch (e) { rolloutMsg.value = '保存失败: ' + e.message; } }
-async function loadPlugins() { try { const d = await api.plugins({ tenant_id: auth.tenantId }); plugins.value = d.items ?? d ?? []; } catch (e) { console.error(e); } }
-async function loadHealth() { try { healthData.value = await api.pluginHealth(auth.tenantId); } catch (e) { console.error(e); } }
-async function loadRolloutPolicy() { try { const d = await api.rolloutPolicy(auth.tenantId); if (d) rolloutPolicy.value = { ...rolloutPolicy.value, ...d }; } catch (e) { console.error(e); } }
-async function loadAudit() { try { const d = await api.rolloutAudit({ tenant_id: auth.tenantId, page_size: 30 }); auditData.value = d.items ?? d ?? []; } catch (e) { console.error(e); } }
+async function togglePlugin(p) { try { await api.updateRolloutPolicy({ plugin_id: p.id, enabled: !p.enabled }); await loadPlugins(); } catch (e) { alert('操作失败'); } }
+async function handleSaveRollout() { rolloutMsg.value = ''; try { await api.updateRolloutPolicy({ ...rolloutPolicy.value }); rolloutMsg.value = '保存成功！'; } catch (e) { rolloutMsg.value = '保存失败: ' + e.message; } }
+async function loadPlugins() { try { const d = await api.plugins({}); plugins.value = d.items ?? d ?? []; } catch (e) { console.error(e); } }
+async function loadHealth() { try { healthData.value = await api.pluginHealth(); } catch (e) { console.error(e); } }
+async function loadRolloutPolicy() { try { const d = await api.rolloutPolicy(); if (d) rolloutPolicy.value = { ...rolloutPolicy.value, ...d }; } catch (e) { console.error(e); } }
+async function loadAudit() { try { const d = await api.rolloutAudit({ page_size: 30 }); auditData.value = d.items ?? d ?? []; } catch (e) { console.error(e); } }
 onMounted(() => { loadPlugins(); loadHealth(); loadRolloutPolicy(); loadAudit(); });
 </script>

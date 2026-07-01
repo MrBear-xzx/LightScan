@@ -18,10 +18,8 @@ _MODEL_MODULES = (
     "app.models.finding",
     "app.models.vuln_case",
     "app.models.policy",
-    "app.models.user",
     "app.models.vuln_tag",
     "app.models.vuln_case_tag",
-    "app.models.project",
 )
 
 

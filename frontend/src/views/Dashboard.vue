@@ -72,11 +72,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '../stores/auth';
+
 import { api } from '../api';
 import Layout from '../components/Layout.vue';
 
-const auth = useAuthStore();
 const loading = ref(true);
 const lifecycle = ref({ state_distribution: {}, total_cases: 0, total_open: 0, created_today: 0, avg_days_open: 0 });
 const aggr = ref({ total_assets: 0, total_findings: 0, severity_breakdown: { critical:0, high:0, medium:0, low:0, unknown:0 } });
@@ -87,9 +86,9 @@ function formatTime(t) { return t ? t.slice(0, 16).replace('T', ' ') : ''; }
 onMounted(async () => {
   try {
     const [lc, ag, lg] = await Promise.all([
-      api.lifecycle(auth.tenantId),
-      api.scanAggregation(auth.tenantId),
-      api.opsLogs({ tenant_id: auth.tenantId, page_size: 5 }),
+      api.lifecycle(),
+      api.scanAggregation(),
+      api.opsLogs({ page_size: 5 }),
     ]);
     lifecycle.value = lc;
     aggr.value = ag;

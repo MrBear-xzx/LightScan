@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class VulnTagCreate(BaseModel):
-    tenant_id: str = Field(min_length=1, description='????')
+    tenant_id: str = Field(default='default', description='????')
     name: str = Field(min_length=1, description='????')
     color: str = Field(default='#1890ff', description='????')
     description: str = Field(default='', description='????')

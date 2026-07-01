@@ -51,16 +51,15 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/auth';
+
 import { api } from '../api';
 import Layout from '../components/Layout.vue';
-const route = useRoute(); const router = useRouter(); const auth = useAuthStore();
-const loading = ref(true); const task = ref(null); const checks = ref([]);
+const route = useRoute(); const router = useRouter(); const loading = ref(true); const task = ref(null); const checks = ref([]);
 const passCount = computed(() => checks.value.filter(c => c.status === 'passed').length);
 const warnCount = computed(() => checks.value.filter(c => c.status === 'warning').length);
 const failCount = computed(() => checks.value.filter(c => c.status === 'failed').length);
 const infoCount = computed(() => checks.value.filter(c => c.status === 'info').length);
 function formatTime(t) { if (!t) return '-'; try { var d = new Date(t.endsWith('+00:00') ? t.replace('+00:00','Z') : t+'Z'); var p = function(n) { return String(n).padStart(2,'0'); }; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); } catch(e) { return t.slice(0,16).replace('T',' '); } }
 function goBack() { router.push('/scans'); }
-onMounted(async () => { try { var d = await api.taskDetail(route.params.id, auth.tenantId); task.value = d; checks.value = d.check_results || []; } catch(e) { console.error(e); task.value = null; } finally { loading.value = false; } });
+onMounted(async () => { try { var d = await api.taskDetail(route.params.id); task.value = d; checks.value = d.check_results || []; } catch(e) { console.error(e); task.value = null; } finally { loading.value = false; } });
 </script>

@@ -34,19 +34,3 @@ def test_ticket_sync_creates_event() -> None:
         ).scalar_one_or_none()
         assert event is not None
 
-
-def test_ticket_sync_rejects_tenant_header_mismatch() -> None:
-    engine = get_engine()
-    seed_case(engine, 6102, state='confirmed', tenant_id='t1', risk_score=8.3, owner='alice')
-
-    client = TestClient(app)
-    response = client.post(
-        '/api/v1/tickets/sync',
-        headers={'X-Tenant-ID': 't2'},
-        json={
-            'tenant_id': 't1',
-            'provider': 'mock_jira',
-            'case_ids': [6102],
-        },
-    )
-    assert response.status_code == 403
